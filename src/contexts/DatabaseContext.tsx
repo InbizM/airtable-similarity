@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Database, Table, Column, Row, ColumnType } from '@/types';
 import { generateId } from '@/lib/utils';
@@ -48,9 +47,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
   const currentDatabase = databases.find(db => db.id === currentDatabaseId) || null;
   const currentTable = currentDatabase?.tables.find(table => table.id === currentTableId) || null;
 
-  // Función para conectar a la base de datos MySQL
   const connectToDatabase = () => {
-    // Simulado por ahora, en una aplicación real se conectaría con MySQL
     if (connectionDetails) {
       setIsConnected(true);
       toast({
@@ -68,7 +65,6 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Funciones para manipular bases de datos
   const addDatabase = (name: string) => {
     const newDatabase: Database = {
       id: generateId(),
@@ -110,7 +106,6 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     setCurrentTableId(null);
   };
 
-  // Funciones para manipular tablas
   const addTable = (databaseId: string, name: string) => {
     const newTable: Table = {
       id: generateId(),
@@ -168,7 +163,6 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     setCurrentTableId(tableId);
   };
 
-  // Funciones para manipular columnas
   const addColumn = (tableId: string, name: string, type: ColumnType) => {
     const newColumn: Column = {
       id: generateId(),
@@ -184,7 +178,10 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
             ? { 
                 ...table, 
                 columns: [...table.columns, newColumn],
-                rows: table.rows.map(row => ({ ...row, [newColumn.id]: null }))
+                rows: table.rows.map(row => ({ 
+                  ...row, 
+                  [newColumn.id]: null 
+                }))
               } 
             : table
         )
@@ -261,7 +258,6 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  // Funciones para manipular filas
   const addRow = (tableId: string, data: any) => {
     const newRow: Row = {
       id: generateId(),
