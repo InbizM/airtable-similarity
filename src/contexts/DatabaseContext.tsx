@@ -1,22 +1,24 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Database, Table, Column, Row, ColumnType } from '@/types';
+
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { Database, Table, Column, Row, ColumnType, DatabaseConnection } from '@/types';
 import { generateId } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
+import { 
+  connectToMySQL, 
+  getSavedConnection, 
+  loadDatabases, 
+  saveDatabases, 
+  hasActiveConnection 
+} from '@/services/mysqlService';
 
 interface DatabaseContextType {
   databases: Database[];
   currentDatabase: Database | null;
   currentTable: Table | null;
   isConnected: boolean;
-  connectionDetails: {
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-    database?: string;
-  } | null;
-  setConnectionDetails: (details: any) => void;
-  connectToDatabase: () => void;
+  connectionDetails: DatabaseConnection | null;
+  setConnectionDetails: (details: DatabaseConnection) => void;
+  connectToDatabase: () => Promise<void>;
   disconnectFromDatabase: () => void;
   addDatabase: (name: string) => void;
   deleteDatabase: (id: string) => void;
@@ -42,22 +44,67 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
   const [currentDatabaseId, setCurrentDatabaseId] = useState<string | null>(null);
   const [currentTableId, setCurrentTableId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [connectionDetails, setConnectionDetails] = useState<any>(null);
+  const [connectionDetails, setConnectionDetails] = useState<DatabaseConnection | null>(null);
+
+  // Efecto para inicializar la conexión si ya existe una guardada
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (hasActiveConnection()) {
+        const savedConnection = getSavedConnection();
+        if (savedConnection) {
+          setConnectionDetails(savedConnection);
+          setIsConnected(true);
+          
+          // Cargar bases de datos guardadas
+          const savedDatabases = await loadDatabases();
+          if (savedDatabases.length > 0) {
+            setDatabases(savedDatabases);
+          }
+        }
+      }
+    };
+    
+    checkConnection();
+  }, []);
+
+  // Efecto para guardar las bases de datos cuando cambien
+  useEffect(() => {
+    if (isConnected && databases.length > 0) {
+      saveDatabases(databases);
+    }
+  }, [databases, isConnected]);
 
   const currentDatabase = databases.find(db => db.id === currentDatabaseId) || null;
   const currentTable = currentDatabase?.tables.find(table => table.id === currentTableId) || null;
 
-  const connectToDatabase = () => {
+  const connectToDatabase = async () => {
     if (connectionDetails) {
-      setIsConnected(true);
-      toast({
-        title: "Conexión exitosa",
-        description: `Conectado a ${connectionDetails.host}:${connectionDetails.port}`,
-      });
+      const connected = await connectToMySQL(connectionDetails);
+      if (connected) {
+        setIsConnected(true);
+        
+        // Cargar bases de datos existentes
+        const savedDatabases = await loadDatabases();
+        if (savedDatabases.length > 0) {
+          setDatabases(savedDatabases);
+        }
+        
+        toast({
+          title: "Conexión exitosa",
+          description: `Conectado a ${connectionDetails.host}:${connectionDetails.port}`,
+        });
+      } else {
+        toast({
+          title: "Error de conexión",
+          description: "No se pudo conectar a la base de datos",
+          variant: "destructive"
+        });
+      }
     }
   };
 
   const disconnectFromDatabase = () => {
+    localStorage.removeItem('dbConnection');
     setIsConnected(false);
     toast({
       title: "Desconectado",
@@ -232,6 +279,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
               ...table,
               columns: [...table.columns, newColumn],
               rows: table.rows.map(row => {
+                // Aseguramos que se mantenga el ID en cada fila
                 return {
                   ...row,
                   [newColumn.id]: row[columnId]

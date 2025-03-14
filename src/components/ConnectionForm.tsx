@@ -1,21 +1,32 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDatabase } from '@/contexts/DatabaseContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DatabaseConnection } from '@/types';
+import { getSavedConnection } from '@/services/mysqlService';
 
 export function ConnectionForm() {
   const { isConnected, connectionDetails, setConnectionDetails, connectToDatabase, disconnectFromDatabase } = useDatabase();
   
   const [connection, setConnection] = useState<DatabaseConnection>({
-    host: connectionDetails?.host || 'localhost',
-    port: connectionDetails?.port || 3306,
-    username: connectionDetails?.username || 'root',
-    password: connectionDetails?.password || '',
-    database: connectionDetails?.database || '',
+    host: 'localhost',
+    port: 3306,
+    username: 'root',
+    password: '',
+    database: '',
   });
+
+  // Cargar configuración guardada si existe
+  useEffect(() => {
+    const savedConnection = getSavedConnection();
+    if (savedConnection) {
+      setConnection(savedConnection);
+    } else if (connectionDetails) {
+      setConnection(connectionDetails);
+    }
+  }, [connectionDetails]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -90,7 +101,7 @@ export function ConnectionForm() {
           <Input
             id="database"
             name="database"
-            value={connection.database}
+            value={connection.database || ''}
             onChange={handleInputChange}
             disabled={isConnected}
             placeholder="Dejar vacío para mostrar todas"
