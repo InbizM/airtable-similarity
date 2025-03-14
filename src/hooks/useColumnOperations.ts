@@ -79,6 +79,7 @@ export function useColumnOperations(
               rows: table.rows.map(row => {
                 // Make sure we preserve the row id and copy the value from the duplicated column
                 return {
+                  id: row.id, // Explicitly include the id to satisfy TypeScript
                   ...row,
                   [newColumn.id]: row[columnId]
                 };
