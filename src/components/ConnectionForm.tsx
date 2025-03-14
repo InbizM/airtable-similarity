@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DatabaseConnection } from '@/types';
 import { getSavedConnection } from '@/services/mysqlService';
+import { Loader2 } from 'lucide-react';
 
 export function ConnectionForm() {
-  const { isConnected, connectionDetails, setConnectionDetails, connectToDatabase, disconnectFromDatabase } = useDatabase();
+  const { isConnected, isLoading, connectionDetails, setConnectionDetails, connectToDatabase, disconnectFromDatabase } = useDatabase();
   
   const [connection, setConnection] = useState<DatabaseConnection>({
     host: 'localhost',
@@ -18,7 +19,7 @@ export function ConnectionForm() {
     database: '',
   });
 
-  // Cargar configuración guardada si existe
+  // Load saved configuration if exists
   useEffect(() => {
     const savedConnection = getSavedConnection();
     if (savedConnection) {
@@ -57,7 +58,7 @@ export function ConnectionForm() {
             name="host"
             value={connection.host}
             onChange={handleInputChange}
-            disabled={isConnected}
+            disabled={isConnected || isLoading}
           />
         </div>
         
@@ -69,7 +70,7 @@ export function ConnectionForm() {
             type="number"
             value={connection.port}
             onChange={handleInputChange}
-            disabled={isConnected}
+            disabled={isConnected || isLoading}
           />
         </div>
         
@@ -80,7 +81,7 @@ export function ConnectionForm() {
             name="username"
             value={connection.username}
             onChange={handleInputChange}
-            disabled={isConnected}
+            disabled={isConnected || isLoading}
           />
         </div>
         
@@ -92,7 +93,7 @@ export function ConnectionForm() {
             type="password"
             value={connection.password}
             onChange={handleInputChange}
-            disabled={isConnected}
+            disabled={isConnected || isLoading}
           />
         </div>
         
@@ -103,19 +104,26 @@ export function ConnectionForm() {
             name="database"
             value={connection.database || ''}
             onChange={handleInputChange}
-            disabled={isConnected}
+            disabled={isConnected || isLoading}
             placeholder="Dejar vacío para mostrar todas"
           />
         </div>
         
         <div className="pt-4">
           {isConnected ? (
-            <Button onClick={handleDisconnect} variant="outline" className="w-full">
+            <Button onClick={handleDisconnect} variant="outline" className="w-full" disabled={isLoading}>
               Desconectar
             </Button>
           ) : (
-            <Button onClick={handleConnect} className="w-full">
-              Conectar
+            <Button onClick={handleConnect} className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Conectando...
+                </>
+              ) : (
+                'Conectar'
+              )}
             </Button>
           )}
         </div>

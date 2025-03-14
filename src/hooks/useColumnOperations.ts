@@ -77,7 +77,7 @@ export function useColumnOperations(
               ...table,
               columns: [...table.columns, newColumn],
               rows: table.rows.map(row => {
-                // Make sure we preserve the id and copy the value from the duplicated column
+                // Make sure we preserve the row id and copy the value from the duplicated column
                 return {
                   ...row,
                   [newColumn.id]: row[columnId]

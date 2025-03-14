@@ -12,6 +12,7 @@ interface DatabaseContextType {
   currentDatabase: Database | null;
   currentTable: Table | null;
   isConnected: boolean;
+  isLoading: boolean;
   connectionDetails: DatabaseConnection | null;
   setConnectionDetails: (details: DatabaseConnection) => void;
   connectToDatabase: () => Promise<void>;
@@ -44,6 +45,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     currentTableId,
     setCurrentTableId,
     isConnected,
+    isLoading,
     connectionDetails,
     setConnectionDetails,
     currentDatabase,
@@ -86,6 +88,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
         currentDatabase,
         currentTable,
         isConnected,
+        isLoading,
         connectionDetails,
         setConnectionDetails,
         connectToDatabase,
