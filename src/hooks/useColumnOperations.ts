@@ -1,6 +1,5 @@
-
 import { useCallback } from 'react';
-import { Database, Column, ColumnType } from '@/types';
+import { Database, Column, ColumnType, Row } from '@/types';
 import { generateId } from '@/lib/utils';
 
 export function useColumnOperations(
@@ -25,6 +24,7 @@ export function useColumnOperations(
                 rows: table.rows.map(row => {
                   // Ensure we preserve the row id and add the new column with a default value
                   return {
+                    id: row.id, // Explicitly include id to satisfy TypeScript
                     ...row,
                     [newColumn.id]: null
                   };
@@ -47,7 +47,11 @@ export function useColumnOperations(
                 columns: table.columns.filter(col => col.id !== columnId),
                 rows: table.rows.map(row => {
                   const { [columnId]: removed, ...rest } = row;
-                  return rest;
+                  // Make sure we keep the id property
+                  return {
+                    id: row.id,
+                    ...rest
+                  };
                 })
               } 
             : table
