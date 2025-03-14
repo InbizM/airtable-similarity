@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Database, Table, Column, Row, ColumnType } from '@/types';
 import { generateId } from '@/lib/utils';
@@ -179,10 +178,12 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
             ? { 
                 ...table, 
                 columns: [...table.columns, newColumn],
-                rows: table.rows.map(row => ({ 
-                  ...row, 
-                  [newColumn.id]: null 
-                }))
+                rows: table.rows.map(row => {
+                  return {
+                    ...row,
+                    [newColumn.id]: null
+                  };
+                })
               } 
             : table
         )
@@ -230,10 +231,12 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
             return {
               ...table,
               columns: [...table.columns, newColumn],
-              rows: table.rows.map(row => ({
-                ...row,
-                [newColumn.id]: row[columnId]
-              }))
+              rows: table.rows.map(row => {
+                return {
+                  ...row,
+                  [newColumn.id]: row[columnId]
+                };
+              })
             };
           })
         };
