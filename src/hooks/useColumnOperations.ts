@@ -23,6 +23,7 @@ export function useColumnOperations(
                 ...table, 
                 columns: [...table.columns, newColumn],
                 rows: table.rows.map(row => {
+                  // Ensure we preserve the row id and add the new column with a default value
                   return {
                     ...row,
                     [newColumn.id]: null
